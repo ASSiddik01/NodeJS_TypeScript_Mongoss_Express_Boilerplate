@@ -149,3 +149,21 @@ Congifure vs code setting
                     "source.organizeImports": true
                 }
             }
+
+Install winston and configure - https://www.npmjs.com/package/winston
+---------------------------------------------------------------------
+        : yarn add winston
+        create logger.ts in the utilities folder
+        peast the code in logger.ts
+            import winston from 'winston'
+
+            export const logger = winston.createLogger({
+                level: 'info',
+                format: winston.format.json(),
+                transports: [
+                    new winston.transports.Console(),
+                    new winston.transports.File({ filename: 'error.log', level: 'error' }),
+                    new winston.transports.File({ filename: 'combined.log' }),
+                ],
+            })
+
