@@ -1,8 +1,18 @@
-import app from './app'
-import { errorHandler } from './middleware/errorHandler'
-import { dbConnect } from './utilities/dbConnect'
+import { errorLogger, logger } from './utilities/logger'
+import { bootStrap } from './utilities/bootStrap'
+import { Server } from 'http'
+let server: Server
 
-dbConnect()
+process.on('uncaughtException', error => {
+  errorLogger.error(error)
+  process.exit(1)
+})
 
-// Handle Error || Close App
-app.use(errorHandler)
+bootStrap()
+
+process.on('SIGTERM', () => {
+  logger.info(`Sigterm is received`)
+  if (server) {
+    server.close()
+  }
+})

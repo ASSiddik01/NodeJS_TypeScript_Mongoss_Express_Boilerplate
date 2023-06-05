@@ -1,7 +1,7 @@
-import { Request, Response } from 'express'
+import { RequestHandler } from 'express'
 import { createUserService } from './user.services'
 
-export const createUser = async (req: Request, res: Response) => {
+export const createUser: RequestHandler = async (req, res) => {
   try {
     const result = await createUserService(req.body)
     res.status(200).send({
