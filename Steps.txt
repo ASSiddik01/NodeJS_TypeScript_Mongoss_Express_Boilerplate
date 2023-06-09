@@ -433,3 +433,54 @@ create server and configure
                 }
             })
 
+Install Zod for handle validation error - https://zod.dev/
+---------------------------------------------------------
+        install zod - yarn add zod
+        create reqValidate.ts and paste the code
+            import { NextFunction, Request, Response } from 'express'
+            import { AnyZodObject } from 'zod'
+
+            const reqValidate =
+            (schema: AnyZodObject) =>
+            async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+                try {
+                await schema.parseAsync({
+                    body: req.body,
+                    query: req.query,
+                    params: req.params,
+                    cookies: req.cookies,
+                })
+                    return next()
+                } catch (error) {
+                    next(error)
+                }
+            }
+            export default reqValidate
+        
+        Modified the globarError.ts by the condition
+            else if (error instanceof ZodError) {
+                const simplifiedError = handleZodError(error)
+                statusCode = simplifiedError.statusCode
+                message = simplifiedError.message
+                errorMessage = simplifiedError.errorMessage
+            }
+
+        Update error.ts in interface folder
+            export type IErrorMessage = {
+                path: string | number
+                message: string
+            }
+
+        Create validator in your specific moduler folder like this (file name user.validation.ts)
+            import { z } from 'zod'
+            export const userZod = z.object({
+                body: z.object({
+                    role: z.string({
+                    required_error: 'Z: Role is required',
+                    }),
+                    password: z.string().optional(),
+                }),
+            })
+
+        Use reqValidate function in the route like this
+            router.route('/').post(reqValidate(userZod), createUser)
