@@ -508,3 +508,59 @@ create global route
         update app.ts data api by the line and import the routers
             app.use('/api/v1', routers)
 
+Formating tryCatch and Response
+-------------------------------
+        install http-status
+            yarn add http-status
+        create tryCatch.ts in the utilities folder and paste the code
+            import { NextFunction, Request, RequestHandler, Response } from 'express'
+
+            export const tryCatch = (fn: RequestHandler) => {
+                return async (req: Request, res: Response, next: NextFunction) => {
+                    try {
+                        await fn(req, res, next)
+                    } catch (error) {
+                        next(error)
+                    }
+                }
+            }
+
+        create apiRes.ts in the interface directory
+            export type IApiRes<T> = {
+                statusCode: number
+                success: boolean
+                message?: string | null
+                result?: T | null
+            }
+
+        Create sendRes.ts in the utilities folder
+            import { Response } from 'express'
+            import { IApiRes } from '../interface/apiRes'
+
+            export const sendRes = <T>(res: Response, data: IApiRes<T>): void => {
+                const resData: IApiRes<T> = {
+                    statusCode: data.statusCode,
+                    success: data.success,
+                    message: data.message || null,
+                    result: data.result || null,
+                }
+                res.status(data.statusCode).send(resData)
+            }
+
+        Use tryCatch and sendRes in the controllter
+            export const createUser = tryCatch(
+                async (req: Request, res: Response, next: NextFunction) => {
+                        const result = await createUserService(req.body)
+                        sendRes(res, {
+                        statusCode: status.OK,
+                        success: true,
+                        message: 'Create users successfully',
+                        result: result,
+                    })
+                        next()
+                }
+            )
+
+
+
+
