@@ -561,6 +561,22 @@ Formating tryCatch and Response
                 }
             )
 
+Handle Unknown api in the app.ts 
+        // Unknown API Handle
+        app.use((req: Request, res: Response, next: NextFunction) => {
+            res.status(status.NOT_FOUND).json({
+                success: false,
+                message: 'Not Found',
+                errorMessage: [
+                {
+                    path: req.originalUrl,
+                    message: 'API Not Found',
+                },
+                ],
+            })
+            next()
+        })
+
 
 
 
