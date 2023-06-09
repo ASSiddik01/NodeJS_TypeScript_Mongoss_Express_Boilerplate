@@ -1,6 +1,6 @@
 import express, { Application, Request, Response, NextFunction } from 'express'
 import cors from 'cors'
-import userRoute from '../src/app/modules/users/user.route'
+import routers from './app/routes'
 import { globarError } from './middleware/globalError'
 const app: Application = express()
 
@@ -10,7 +10,7 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
 // Data API
-app.use('/api/v1/user', userRoute)
+app.use('/api/v1', routers)
 
 // Testing API
 app.get('/', (req: Request, res: Response, next: NextFunction) => {

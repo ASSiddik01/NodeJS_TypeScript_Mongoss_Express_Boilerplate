@@ -484,3 +484,27 @@ Install Zod for handle validation error - https://zod.dev/
 
         Use reqValidate function in the route like this
             router.route('/').post(reqValidate(userZod), createUser)
+
+
+create global route
+-----------------------
+        Create routes folder in the app directory
+        create index.ts in the route folder
+            import express from 'express'
+            const router = express.Router()
+            import userRoute from '../modules/users/user.route'
+
+            const appRoutes = [
+                {
+                    path: '/user',
+                    route: userRoute,
+                },
+            ]
+
+            appRoutes.forEach(route => router.use(route.path, route.route))
+
+            export default router
+
+        update app.ts data api by the line and import the routers
+            app.use('/api/v1', routers)
+
