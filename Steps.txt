@@ -433,3 +433,150 @@ create server and configure
                 }
             })
 
+Install Zod for handle validation error - https://zod.dev/
+---------------------------------------------------------
+        install zod - yarn add zod
+        create reqValidate.ts and paste the code
+            import { NextFunction, Request, Response } from 'express'
+            import { AnyZodObject } from 'zod'
+
+            const reqValidate =
+            (schema: AnyZodObject) =>
+            async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+                try {
+                await schema.parseAsync({
+                    body: req.body,
+                    query: req.query,
+                    params: req.params,
+                    cookies: req.cookies,
+                })
+                    return next()
+                } catch (error) {
+                    next(error)
+                }
+            }
+            export default reqValidate
+        
+        Modified the globarError.ts by the condition
+            else if (error instanceof ZodError) {
+                const simplifiedError = handleZodError(error)
+                statusCode = simplifiedError.statusCode
+                message = simplifiedError.message
+                errorMessage = simplifiedError.errorMessage
+            }
+
+        Update error.ts in interface folder
+            export type IErrorMessage = {
+                path: string | number
+                message: string
+            }
+
+        Create validator in your specific moduler folder like this (file name user.validation.ts)
+            import { z } from 'zod'
+            export const userZod = z.object({
+                body: z.object({
+                    role: z.string({
+                    required_error: 'Z: Role is required',
+                    }),
+                    password: z.string().optional(),
+                }),
+            })
+
+        Use reqValidate function in the route like this
+            router.route('/').post(reqValidate(userZod), createUser)
+
+
+create global route
+-----------------------
+        Create routes folder in the app directory
+        create index.ts in the route folder
+            import express from 'express'
+            const router = express.Router()
+            import userRoute from '../modules/users/user.route'
+
+            const appRoutes = [
+                {
+                    path: '/user',
+                    route: userRoute,
+                },
+            ]
+
+            appRoutes.forEach(route => router.use(route.path, route.route))
+
+            export default router
+
+        update app.ts data api by the line and import the routers
+            app.use('/api/v1', routers)
+
+Formating tryCatch and Response
+-------------------------------
+        install http-status
+            yarn add http-status
+        create tryCatch.ts in the utilities folder and paste the code
+            import { NextFunction, Request, RequestHandler, Response } from 'express'
+
+            export const tryCatch = (fn: RequestHandler) => {
+                return async (req: Request, res: Response, next: NextFunction) => {
+                    try {
+                        await fn(req, res, next)
+                    } catch (error) {
+                        next(error)
+                    }
+                }
+            }
+
+        create apiRes.ts in the interface directory
+            export type IApiRes<T> = {
+                statusCode: number
+                success: boolean
+                message?: string | null
+                result?: T | null
+            }
+
+        Create sendRes.ts in the utilities folder
+            import { Response } from 'express'
+            import { IApiRes } from '../interface/apiRes'
+
+            export const sendRes = <T>(res: Response, data: IApiRes<T>): void => {
+                const resData: IApiRes<T> = {
+                    statusCode: data.statusCode,
+                    success: data.success,
+                    message: data.message || null,
+                    result: data.result || null,
+                }
+                res.status(data.statusCode).send(resData)
+            }
+
+        Use tryCatch and sendRes in the controllter
+            export const createUser = tryCatch(
+                async (req: Request, res: Response, next: NextFunction) => {
+                        const result = await createUserService(req.body)
+                        sendRes(res, {
+                        statusCode: status.OK,
+                        success: true,
+                        message: 'Create users successfully',
+                        result: result,
+                    })
+                        next()
+                }
+            )
+
+Handle Unknown api in the app.ts 
+        // Unknown API Handle
+        app.use((req: Request, res: Response, next: NextFunction) => {
+            res.status(status.NOT_FOUND).json({
+                success: false,
+                message: 'Not Found',
+                errorMessage: [
+                {
+                    path: req.originalUrl,
+                    message: 'API Not Found',
+                },
+                ],
+            })
+            next()
+        })
+
+
+
+

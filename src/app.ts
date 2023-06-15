@@ -1,7 +1,8 @@
 import express, { Application, Request, Response, NextFunction } from 'express'
 import cors from 'cors'
-import userRoute from '../src/app/modules/users/user.route'
+import routers from './app/routes'
 import { globarError } from './middleware/globalError'
+import status from 'http-status'
 const app: Application = express()
 
 // Middleware
@@ -10,7 +11,7 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
 // Data API
-app.use('/api/v1/user', userRoute)
+app.use('/api/v1', routers)
 
 // Testing API
 app.get('/', (req: Request, res: Response, next: NextFunction) => {
@@ -33,8 +34,18 @@ app.get('/', (req: Request, res: Response, next: NextFunction) => {
 app.use(globarError)
 
 // Unknown API Handle
-app.all('*', (req: Request, res: Response) => {
-  res.send(`+++ Requested Route Not Found +++`)
+app.use((req: Request, res: Response, next: NextFunction) => {
+  res.status(status.NOT_FOUND).json({
+    success: false,
+    message: 'Not Found',
+    errorMessage: [
+      {
+        path: req.originalUrl,
+        message: 'API Not Found',
+      },
+    ],
+  })
+  next()
 })
 
 export default app
