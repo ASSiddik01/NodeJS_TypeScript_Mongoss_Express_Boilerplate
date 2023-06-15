@@ -6,7 +6,8 @@ export const sendRes = <T>(res: Response, data: IApiRes<T>): void => {
     statusCode: data.statusCode,
     success: data.success,
     message: data.message || null,
-    result: data.result || null,
+    meta: data.meta || null || undefined,
+    data: data.data || null,
   }
   res.status(data.statusCode).send(resData)
 }

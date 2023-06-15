@@ -1,8 +1,9 @@
 import express, { Application, Request, Response, NextFunction } from 'express'
 import cors from 'cors'
 import routers from './app/routes'
-import { globarError } from './middleware/globalError'
-import status from 'http-status'
+import { globalError } from './middleware/globalError'
+import { sendRes } from './utilities/sendRes'
+import httpStatus from 'http-status'
 const app: Application = express()
 
 // Middleware
@@ -14,31 +15,25 @@ app.use(express.urlencoded({ extended: true }))
 app.use('/api/v1', routers)
 
 // Testing API
-app.get('/', (req: Request, res: Response, next: NextFunction) => {
-  res.send('+++ App Running Successfully +++')
-  next()
-  // Uncought Error
-  // console.log(x)
-
-  // Test Error
-  // throw new Error('General Error')
-
-  // Test API Error
-  // throw new ApiError(403, 'API Error')
-
-  // Promiss rejection
-  // Promise.reject(new Error(`Unhandle Promiss Rejection`))
+app.get('/', (req: Request, res: Response) => {
+  sendRes(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: '+++ App Running Successfully +++',
+    data: null,
+  })
 })
 
 // Global error handle
-app.use(globarError)
+app.use(globalError)
 
 // Unknown API Handle
 app.use((req: Request, res: Response, next: NextFunction) => {
-  res.status(status.NOT_FOUND).json({
-    success: false,
-    message: 'Not Found',
-    errorMessage: [
+  sendRes(res, {
+    statusCode: httpStatus.NOT_FOUND,
+    success: true,
+    message: 'API Not Found',
+    data: [
       {
         path: req.originalUrl,
         message: 'API Not Found',
