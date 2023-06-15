@@ -29,11 +29,10 @@ app.use(globalError)
 
 // Unknown API Handle
 app.use((req: Request, res: Response, next: NextFunction) => {
-  sendRes(res, {
-    statusCode: httpStatus.NOT_FOUND,
-    success: true,
-    message: 'API Not Found',
-    data: [
+  res.status(httpStatus.NOT_FOUND).json({
+    success: false,
+    message: 'Not Found',
+    errorMessage: [
       {
         path: req.originalUrl,
         message: 'API Not Found',
