@@ -1,9 +1,19 @@
 import { z } from 'zod'
-export const userZod = z.object({
+import { role } from './user.constant'
+
+export const updateUserZod = z.object({
   body: z.object({
-    role: z.string({
-      required_error: 'Z: Role is required',
-    }),
+    name: z
+      .object({
+        firstName: z.string().optional(),
+        lastName: z.string().optional(),
+      })
+      .optional(),
+    phoneNumber: z.string().optional(),
+    role: z.enum([...role] as [string, ...string[]]).optional(),
     password: z.string().optional(),
+    address: z.string().optional(),
+    budget: z.number().optional(),
+    income: z.number().optional(),
   }),
 })
